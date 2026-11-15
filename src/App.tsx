@@ -114,6 +114,129 @@ interface BilingualText {
   ar: string;
 }
 
+interface QuizChallenge {
+  sol: number;
+  tag: BilingualText;
+  question: BilingualText;
+  options: [BilingualText, BilingualText, BilingualText];
+  correctIndex: number;
+  verifiedFact: BilingualText;
+  wrongHint: BilingualText;
+}
+
+const SOL_QUIZ_CHALLENGES: Record<number, QuizChallenge> = {
+  2: {
+    sol: 2,
+    tag: { en: 'NASA DONKI · SPACE WEATHER', ar: 'ناسا DONKI · طقس الفضاء' },
+    question: {
+      en: 'DONKI sensors just detected an X-Class Solar Flare heading toward our base! What travels fastest and hits our outpost first?',
+      ar: 'رصدت مستشعرات DONKI توهجاً شمسياً من الفئة X متجهاً نحو قاعدتنا! ما الذي يسافر أسرع ويصل أولاً؟',
+    },
+    options: [
+      { en: 'High-energy radiation & light', ar: 'الأشعة عالية الطاقة والضوء' },
+      { en: 'Space dust', ar: 'غبار الفضاء' },
+      { en: 'Sound waves', ar: 'الموجات الصوتية' },
+    ],
+    correctIndex: 0,
+    verifiedFact: {
+      en: 'Solar X-rays and light race at 300,000 km/s (~8 min from the Sun), arriving before CME particles—while sound cannot travel through empty space!',
+      ar: 'الأشعة السينية وضوء الشمس تسير بسرعة الضوء (~8 دقائق من الشمس)، فتصل قبل جسيمات الانبعاث الكتلي—بينما الصوت لا ينتقل في الفراغ!',
+    },
+    wrongHint: {
+      en: 'Nice try! Sound cannot travel in empty space and dust moves slowly—high-energy radiation & light arrive first at light speed. Click Reset Sol to retry!',
+      ar: 'محاولة جميلة! الصوت لا ينتقل في الفراغ والغبار بطيء—الأشعة عالية الطاقة والضوء تصل أولاً بسرعة الضوء. اضغط «إعادة هذا اليوم» للمحاولة مجدداً!',
+    },
+  },
+  4: {
+    sol: 4,
+    tag: { en: 'NASA OSDR & RADLAB', ar: 'ناسا OSDR و RadLab' },
+    question: {
+      en: 'Astronauts on the ISS absorb higher daily radiation (mSv) than on Earth. Why?',
+      ar: 'يمتص رواد محطة الفضاء الدولية إشعاعاً يومياً (mSv) أعلى من سطح الأرض. لماذا؟',
+    },
+    options: [
+      { en: 'The Sun is closer to the Moon', ar: 'لأن الشمس أقرب إلى القمر' },
+      { en: 'No thick atmosphere or magnetic field protecting them', ar: 'لا يوجد غلاف جوي سميك أو مجال مغناطيسي كامل يحميهم' },
+      { en: 'Space suits create radiation', ar: 'لأن بدلات الفضاء تصدر إشعاعاً' },
+    ],
+    correctIndex: 1,
+    verifiedFact: {
+      en: "Earth's thick atmosphere and magnetosphere block most cosmic rays; NASA RadLab records higher mSv doses in space so bases rely on shielding.",
+      ar: 'الغلاف الجوي للأرض ومجالها المغناطيسي يحجبان معظم الأشعة الكونية؛ لذا تسجل قاعدة RadLab جرعات أعلى في الفضاء تتطلب دروعاً واقية.',
+    },
+    wrongHint: {
+      en: "Almost! Spacesuits keep crews safe—it's Earth's thick air and magnetic shield that protect us on the ground. Use Reset Sol if you want to retry!",
+      ar: 'قريب جداً! البدلات تحمي الرواد—الغلاف الجوي السميك والمجال المغناطيسي للأرض هما ما يحمياننا. اضغط «إعادة هذا اليوم» إذا أردت إعادة المحاولة!',
+    },
+  },
+  6: {
+    sol: 6,
+    tag: { en: 'CSA SPACE FARMING', ar: 'الزراعة الفضائية الكندية CSA' },
+    question: {
+      en: 'In our CSA Hydroponic Greenhouse, plants grow without soil. What do they need most from our base reactor?',
+      ar: 'في مزرعة CSA المائية تنمو النباتات بدون تربة. ما أكثر ما تحتاجه من طاقة القاعدة؟',
+    },
+    options: [
+      { en: 'Specific LED light spectrum & water nutrients', ar: 'طيف إضاءة LED محدد ومغذيات مائية' },
+      { en: 'Heavy Earth dirt', ar: 'تربة أرضية ثقيلة' },
+      { en: 'High gravity', ar: 'جاذبية عالية' },
+    ],
+    correctIndex: 0,
+    verifiedFact: {
+      en: 'CSA hydroponic farms swap heavy dirt for nutrient-rich water and tuned red/blue LED lights to turn CO2 into fresh oxygen and food!',
+      ar: 'تستبدل مزارع CSA المائية التربة الثقيلة بماء غني بالمغذيات وإضاءة LED حمراء وزرقاء لتحويل CO2 إلى أكسجين وغذاء طازج!',
+    },
+    wrongHint: {
+      en: 'Think like a space farmer! Hauling heavy Earth dirt is too expensive—hydroponic crops thrive with LED grow-lights and water nutrients. Hit Reset Sol to retry!',
+      ar: 'فكّر كرائد مزارع! نقل التربة الثقيلة مكلف جداً—النباتات المائية تحتاج إضاءة LED ومغذيات مائية. اضغط «إعادة هذا اليوم» لإعادة المحاولة!',
+    },
+  },
+  8: {
+    sol: 8,
+    tag: { en: 'NASA MARS TREK · JEZERO CRATER', ar: 'ناسا Mars Trek · فوهة جيزيرو' },
+    question: {
+      en: "Why is Jezero Crater on Mars such an exciting place for NASA's Perseverance rover to explore?",
+      ar: 'لماذا تُعد فوهة جيزيرو على المريخ موقعاً مذهلاً لاستكشاف مركبة Perseverance التابعة لناسا؟',
+    },
+    options: [
+      { en: 'It has liquid oceans today', ar: 'لأنها تحتوي على محيطات سائلة اليوم' },
+      { en: 'It is covered in ice volcanoes', ar: 'لأنها مغطاة ببراكين جليدية' },
+      { en: 'It was an ancient lakebed that might hold signs of past microbial life', ar: 'لأنها كانت بحيرة قديمة قد تحفظ آثار حياة ميكروبية سابقة' },
+    ],
+    correctIndex: 2,
+    verifiedFact: {
+      en: 'Mars Trek topography and rover data confirm Jezero Crater held a river delta and lake ~3.5 billion years ago—a prime spot for ancient biosignatures!',
+      ar: 'تؤكد خرائط Mars Trek وبيانات المركبة أن فوهة جيزيرو كانت بحيرة ودلتا نهر قبل 3.5 مليار سنة—وهي أفضل مكان للبحث عن آثار حياة قديمة!',
+    },
+    wrongHint: {
+      en: 'Good guess! Mars is too cold for liquid oceans today—Jezero excites scientists because it used to be an ancient lakebed. Click Reset Sol to retry!',
+      ar: 'محاولة لطيفة! المريخ بارد جداً ولا توجد فيه محيطات سائلة اليوم—فوهة جيزيرو تهم العلماء لأنها كانت بحيرة قديمة. اضغط «إعادة هذا اليوم» لإعادة المحاولة!',
+    },
+  },
+  10: {
+    sol: 10,
+    tag: { en: 'MARS DEEP SPACE COMMS', ar: 'اتصالات الفضاء العميق للمريخ' },
+    question: {
+      en: "If you send a 'Hello Earth!' message from Mars, why can't Mission Control reply instantly?",
+      ar: 'إذا أرسلت رسالة «مرحباً يا أرض!» من المريخ، لماذا لا يستطيع مركز التحكم الرد فوراً؟',
+    },
+    options: [
+      { en: 'The Mars rover runs out of Wi-Fi', ar: 'لأن مركبة المريخ تفقد إشارة الواي فاي' },
+      { en: 'Radio waves travel at the speed of light, taking up to 14–20 minutes across space', ar: 'موجات الراديو تسير بسرعة الضوء فتستغرق حتى 14–20 دقيقة عبر الفضاء' },
+      { en: 'Earth stops rotating', ar: 'لأن الأرض تتوقف عن الدوران' },
+    ],
+    correctIndex: 1,
+    verifiedFact: {
+      en: 'Even at light speed (300,000 km/s), Mars is tens of millions of km away—so astronauts train to manage outpost emergencies on their own!',
+      ar: 'حتى بسرعة الضوء (300,000 كم/ث)، تفصل ملايين الكيلومترات بين المريخ والأرض—لذا يتدرب الرواد على حل الطوارئ بأنفسهم!',
+    },
+    wrongHint: {
+      en: "Close! Deep space doesn't use home Wi-Fi—the true speed limit across millions of kilometers is the speed of light! Hit Reset Sol to retry!",
+      ar: 'قريب! الفضاء العميق لا يعتمد على الواي فاي—السبب الحقيقي عبر ملايين الكيلومترات هو سرعة الضوء. اضغط «إعادة هذا اليوم» لإعادة المحاولة!',
+    },
+  },
+};
+
 interface ScienceCard {
   sol: number;
   title: BilingualText;
@@ -1238,6 +1361,7 @@ export default function App() {
   });
   const [harvestUsedThisSol, setHarvestUsedThisSol] = useState<boolean>(false);
   const [dustCleanedThisSol, setDustCleanedThisSol] = useState<boolean>(false);
+  const [quizAnswerIndex, setQuizAnswerIndex] = useState<number | null>(null);
   const [missionLog, setMissionLog] = useState<MissionLogMap>(() => readMissionLog());
   const recordedDebriefRef = useRef<boolean>(false);
 
@@ -2068,6 +2192,7 @@ export default function App() {
       setActiveRooms([]);
       setHarvestUsedThisSol(false);
       setDustCleanedThisSol(false);
+      setQuizAnswerIndex(null);
       recordedDebriefRef.current = false;
       setCauseEffectNote({
         tone: 'sky',
@@ -2136,6 +2261,7 @@ export default function App() {
     setActiveRooms([]);
     setHarvestUsedThisSol(false);
     setDustCleanedThisSol(false);
+    setQuizAnswerIndex(null);
     setCauseEffectNote({
       tone: 'amber',
       sentence:
@@ -2234,6 +2360,7 @@ export default function App() {
     setActiveRooms([]);
     setHarvestUsedThisSol(false);
     setDustCleanedThisSol(false);
+    setQuizAnswerIndex(null);
     setCauseEffectNote({
       tone: 'sky',
       sentence:
@@ -2297,6 +2424,7 @@ export default function App() {
     setActiveRooms([]);
     setHarvestUsedThisSol(false);
     setDustCleanedThisSol(false);
+    setQuizAnswerIndex(null);
     setCelebrating(false);
     setFlareStage('none');
     setSignalInFlight(false);
@@ -2319,6 +2447,36 @@ export default function App() {
         : `Sol ${cur.sol} reset cleanly, ${commanderName}—pick your new power combo!`
     );
   }, [telemetry, commanderName, lang]);
+
+  const activeQuiz = SOL_QUIZ_CHALLENGES[sol] || null;
+
+  const handleQuizAnswer = useCallback(
+    (choiceIndex: number) => {
+      const cur = stateRef.current;
+      const quiz = SOL_QUIZ_CHALLENGES[cur.sol];
+      if (!quiz || quizAnswerIndex !== null || cur.phase !== 'PLAYING' || cur.isPaused) return;
+      soundFX.unlock();
+      setQuizAnswerIndex(choiceIndex);
+
+      if (choiceIndex === quiz.correctIndex) {
+        soundFX.playCardUnlock();
+        triggerCelebration();
+        setResources((prev) => ({
+          ...prev,
+          science: Math.min(100, prev.science + 15),
+        }));
+        setMascotNote(
+          lang === 'ar'
+            ? `إجابة علمية رائعة يا ${commanderName}! تم التحقق من حقيقة ناسا (+15% علوم)!`
+            : `NASA Fact Verified, ${commanderName}! +15% Science Score & crew morale boost!`
+        );
+      } else {
+        soundFX.playSwitch(false);
+        setMascotNote(quiz.wrongHint[lang]);
+      }
+    },
+    [quizAnswerIndex, triggerCelebration, commanderName, lang]
+  );
 
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
@@ -5273,6 +5431,124 @@ export default function App() {
               onClick={() => toggleRoom('science')}
             />
           </div>
+
+          {/* MISSION CONTROL MULTIPLE-CHOICE SCIENCE CHALLENGE (SOLS 2, 4, 6, 8, 10) */}
+          {activeQuiz && (
+            <div className="rounded-2xl border border-indigo-400/50 bg-gradient-to-br from-indigo-950/75 via-slate-900/90 to-sky-950/70 p-4 space-y-3 shadow-lg">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-indigo-500/25 border border-indigo-400/50 text-[11px] font-mono-tabular font-bold text-indigo-200">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                    <span>{t(`MISSION CONTROL SCIENCE QUIZ · SOL ${sol}`, `تحدي علوم مركز التحكم · اليوم ${sol}`)}</span>
+                  </span>
+                  <span className="text-[11px] font-mono-tabular font-semibold text-sky-300">
+                    {activeQuiz.tag[lang]}
+                  </span>
+                </div>
+                <ReadAloudButton
+                  id={`quiz-sol-${sol}`}
+                  lang={lang}
+                  compact
+                  speaking={speakingId === `quiz-sol-${sol}`}
+                  onToggle={() =>
+                    toggleSpeak(
+                      `quiz-sol-${sol}`,
+                      `${activeQuiz.question[lang]} ${activeQuiz.options.map((o) => o[lang]).join('. ')}`
+                    )
+                  }
+                />
+              </div>
+
+              <p className="font-display font-bold text-sm sm:text-base text-white leading-snug">
+                {activeQuiz.question[lang]}
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                {activeQuiz.options.map((opt, idx) => {
+                  const letter = lang === 'ar' ? ['أ', 'ب', 'ج'][idx] : ['A', 'B', 'C'][idx];
+                  const answered = quizAnswerIndex !== null;
+                  const isSelected = quizAnswerIndex === idx;
+                  const isCorrect = idx === activeQuiz.correctIndex;
+
+                  let btnStyle =
+                    'border-slate-700 bg-slate-900/90 hover:border-indigo-400 hover:bg-indigo-950/60 text-slate-100 cursor-pointer';
+                  if (answered) {
+                    if (isCorrect) {
+                      btnStyle =
+                        'border-emerald-400 bg-emerald-950/70 text-emerald-100 shadow-md shadow-emerald-950/50 cursor-default';
+                    } else if (isSelected) {
+                      btnStyle =
+                        'border-amber-400 bg-amber-950/60 text-amber-100 cursor-default';
+                    } else {
+                      btnStyle =
+                        'border-slate-800 bg-slate-950/60 text-slate-400 cursor-default';
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      disabled={answered}
+                      onClick={() => handleQuizAnswer(idx)}
+                      className={`min-h-[50px] px-3.5 py-2.5 rounded-xl border text-start flex items-center gap-2.5 transition-all ${btnStyle}`}
+                    >
+                      <span
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center font-mono-tabular font-extrabold text-xs shrink-0 ${
+                          answered && isCorrect
+                            ? 'bg-emerald-400 text-slate-950'
+                            : answered && isSelected
+                              ? 'bg-amber-400 text-slate-950'
+                              : 'bg-indigo-500/25 border border-indigo-400/50 text-indigo-200'
+                        }`}
+                      >
+                        {letter}
+                      </span>
+                      <span className="text-xs sm:text-sm font-semibold leading-snug">
+                        {opt[lang]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {quizAnswerIndex !== null && (
+                <div
+                  className={`rounded-xl border px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm ${
+                    quizAnswerIndex === activeQuiz.correctIndex
+                      ? 'border-emerald-400/60 bg-emerald-950/55 text-emerald-100'
+                      : 'border-amber-400/60 bg-amber-950/50 text-amber-100'
+                  }`}
+                >
+                  <div className="flex items-start sm:items-center gap-2.5 min-w-0 flex-1">
+                    {quizAnswerIndex === activeQuiz.correctIndex ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0 mt-0.5 sm:mt-0" />
+                    ) : (
+                      <HelpCircle className="w-4 h-4 text-amber-300 shrink-0 mt-0.5 sm:mt-0" />
+                    )}
+                    <div className="space-y-0.5">
+                      <span
+                        className={`inline-block px-2 py-0.5 rounded font-mono-tabular font-extrabold text-[11px] me-2 ${
+                          quizAnswerIndex === activeQuiz.correctIndex
+                            ? 'bg-emerald-400 text-slate-950'
+                            : 'bg-amber-400 text-slate-950'
+                        }`}
+                      >
+                        {quizAnswerIndex === activeQuiz.correctIndex
+                          ? t('NASA Fact Verified! (+15% Science)', 'تم التحقق من حقيقة ناسا! (+15% علوم)')
+                          : t('Science Hint · Try Again with Reset Sol!', 'تلميح علمي · أعد المحاولة بزر إعادة اليوم!')}
+                      </span>
+                      <span>
+                        {quizAnswerIndex === activeQuiz.correctIndex
+                          ? activeQuiz.verifiedFact[lang]
+                          : activeQuiz.wrongHint[lang]}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ZERO-LAG MINI-ACTIONS STRIP (HARVEST CROPS & BRUSH SURFACE DUST) */}
           <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-slate-800 bg-slate-900/75 px-3.5 py-2.5">
