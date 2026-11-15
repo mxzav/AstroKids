@@ -207,7 +207,7 @@ function writeMissionLog(log: MissionLogMap): void {
 }
 
 const NASA_API_KEY = '9GQDwPLLqJhfDnpgLrRbDmp9FLKzTHt9kgzJdRN7';
-const SOL_DURATION_SEC = 16;
+const SOL_DURATION_SEC = 30;
 const MOON_SIGNAL_SEC = 1.3;
 const MARS_SIGNAL_SEC = 5.0;
 
@@ -1178,8 +1178,8 @@ export default function App() {
     return trimmed;
   }, [commanderInput, lang]);
 
-  // Power queue (2 out of 3 rule: max 2 rooms active simultaneously)
-  const [activeRooms, setActiveRooms] = useState<RoomId[]>(['shield', 'greenhouse']);
+  // Power queue (2 out of 3 rule: max 2 rooms active simultaneously; starts empty each Sol so player must choose)
+  const [activeRooms, setActiveRooms] = useState<RoomId[]>([]);
   const [cycledNotice, setCycledNotice] = useState<string | null>(null);
 
   // Resources (0-100)
@@ -1211,7 +1211,7 @@ export default function App() {
 
   // Collected Science Cards, Emergency Pod Save, Mini-Actions & Local Mission Log
   const [unlockedSols, setUnlockedSols] = useState<number[]>([]);
-  const [emergencyReason, setEmergencyReason] = useState<'oxygen' | 'radiation' | 'science'>('oxygen');
+  const [emergencyReason, setEmergencyReason] = useState<'oxygen' | 'radiation' | 'science' | 'no_decision'>('oxygen');
   const [telemetry, setTelemetry] = useState<PlayerTelemetry>({
     flaresBlocked: 0,
     flaresTotal: 0,
@@ -1424,7 +1424,7 @@ export default function App() {
     const isX = cls.startsWith('X');
     const isM = cls.startsWith('M');
 
-    const unshieldedFlareRadRate = isX ? -13.5 : isM ? -10.2 : -7.2;
+    const unshieldedFlareRadRate = isX ? -11.5 : isM ? -8.8 : -6.4;
     const baseFlareMsv = isX ? 2.85 : isM ? 1.95 : 1.25;
     const cmeSpeedBoostMsv = Math.min(0.65, Math.max(0, (activeSolCme.speed - 700) / 1400));
     const activeFlareMsv = Number((baseFlareMsv + cmeSpeedBoostMsv).toFixed(2));
@@ -1440,8 +1440,8 @@ export default function App() {
     const baseTemp =
       series[baseIdx].tempC + (planet === 'mars' ? trekOffset.temp * 0.45 : 0);
     const isColdSol = baseTemp < (planet === 'mars' ? -62 : -118);
-    const o2DrainRate = isColdSol ? -3.1 : -2.4;
-    const o2ChargeRate = isColdSol ? 5.2 : 6.2;
+    const o2DrainRate = isColdSol ? -1.85 : -1.45;
+    const o2ChargeRate = isColdSol ? 3.8 : 4.5;
 
     const goalType: SolBrief['goalType'] =
       sol === 1
@@ -1478,6 +1478,7 @@ export default function App() {
     solElapsed,
     isPaused,
     activeRooms,
+    hasActedThisSol,
     resources,
     signalInFlight,
     signalProgress,
@@ -1499,6 +1500,7 @@ export default function App() {
     solElapsed,
     isPaused,
     activeRooms,
+    hasActedThisSol,
     resources,
     signalInFlight,
     signalProgress,
@@ -2047,16 +2049,16 @@ export default function App() {
       setHasActedThisSol(false);
       setSolGoalCompleted(false);
       setCelebrating(false);
-      setActiveRooms(['shield', 'greenhouse']);
+      setActiveRooms([]);
       setHarvestUsedThisSol(false);
       setDustCleanedThisSol(false);
       recordedDebriefRef.current = false;
       setCauseEffectNote({
-        tone: 'emerald',
+        tone: 'sky',
         sentence:
           lang === 'ar'
-            ? 'تشغّل البطارية الآن الدرع الإشعاعي ومصابيح النمو المائية معاً؛ لحماية الطاقم وتوليد الأكسجين قبل أي بث علمي.'
-            : 'Your battery currently pairs the Radiation Shield with CSA Hydroponic grow-lights—protecting crew DNA and making O2 while Earth Comms stay standby.',
+            ? 'لم يتم تشغيل أي غرفة تلقائياً! اقرأ السؤال ثم اختر بنفسك غرفة أو غرفتين بالأسفل لتحديد قرارك.'
+            : 'No rooms are pre-selected! Read the mission question and choose 1 or 2 power switches below yourself.',
       });
       setResources({ oxygen: 82, radiation: 86, science: 58 });
       setSignalInFlight(false);
@@ -2101,14 +2103,15 @@ export default function App() {
     setSolElapsed(0);
     setHasActedThisSol(false);
     setSolGoalCompleted(false);
+    setActiveRooms([]);
     setHarvestUsedThisSol(false);
     setDustCleanedThisSol(false);
     setCauseEffectNote({
       tone: 'amber',
       sentence:
         lang === 'ar'
-          ? 'حاسوب القاعدة: بدّل بين الغرف مبكراً قبل أن يصل أي عداد إلى 0% لأن البطارية لا تغذي سوى غرفتين.'
-          : 'Onboard Computer: Cycle rooms before any meter drops low—2-room battery limits mean every power trade shifts O2, shielding, or comms.',
+          ? 'حاسوب القاعدة: أُعيد ضبط المفاتيح — اختر بنفسك الغرف المناسبة لهذا السؤال قبل انتهاء مهلة الـ 30 ثانية.'
+          : 'Onboard Computer: Switches reset—choose your own room combination for this Sol before the 30s timer ends.',
     });
     setCelebrating(false);
     setFlareStage('none');
@@ -2126,7 +2129,7 @@ export default function App() {
 
   const completeSolNow = useCallback(() => {
     const cur = stateRef.current;
-    if (cur.phase !== 'PLAYING' || cur.isPaused) return;
+    if (cur.phase !== 'PLAYING' || cur.isPaused || !cur.hasActedThisSol || cur.activeRooms.length === 0) return;
     soundFX.unlock();
 
     const shieldActive = cur.activeRooms.includes('shield');
@@ -2198,9 +2201,16 @@ export default function App() {
     setSolElapsed(0);
     setHasActedThisSol(false);
     setSolGoalCompleted(false);
+    setActiveRooms([]);
     setHarvestUsedThisSol(false);
     setDustCleanedThisSol(false);
-    setCauseEffectNote(null);
+    setCauseEffectNote({
+      tone: 'sky',
+      sentence:
+        lang === 'ar'
+          ? `سؤال اليوم ${nextSol}: لم يتم اختيار أي غرفة تلقائياً — حدد قرارك بتشغيل غرفة أو غرفتين بالأسفل!`
+          : `Sol ${nextSol} question: No rooms are carried over automatically—pick 1 or 2 switches below to lock in your decision!`,
+    });
     setCelebrating(false);
     setFlareStage('none');
     setSignalInFlight(false);
@@ -2212,18 +2222,18 @@ export default function App() {
       radiation: Math.min(100, Math.max(35, prev.radiation + 5)),
       science: Math.min(100, Math.max(35, prev.science + 5)),
     }));
-    setMascotRoom(activeRooms[activeRooms.length - 1] || 'greenhouse');
+    setMascotRoom('greenhouse');
     setMascotNote(
       lang === 'ar'
         ? FLARE_SOLS.has(nextSol)
-          ? `بدأ اليوم ${nextSol} يا ${commanderName} — راقب تنبيهات ناسا للعواصف الشمسية!`
-          : `بدأ اليوم ${nextSol} يا ${commanderName}! حافظ على توازن الموارد الثلاثة.`
+          ? `بدأ اليوم ${nextSol} يا ${commanderName} — اختر غرفك وراقب تنبيهات ناسا للعواصف!`
+          : `بدأ اليوم ${nextSol} يا ${commanderName}! اختر بنفسك الغرف المناسبة لهذا السؤال.`
         : FLARE_SOLS.has(nextSol)
-          ? `Sol ${nextSol} starting, ${commanderName}—watch NASA DONKI for solar flares!`
-          : `Sol ${nextSol} starting, ${commanderName}! Keep all 3 bars healthy.`
+          ? `Sol ${nextSol} starting, ${commanderName}—pick your rooms and watch NASA DONKI!`
+          : `Sol ${nextSol} starting, ${commanderName}! Choose your switches for this question.`
     );
     setPhase('PLAYING');
-  }, [sol, activeRooms, commanderName, lang]);
+  }, [sol, commanderName, lang]);
 
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
@@ -2382,7 +2392,7 @@ export default function App() {
 
         // 1. Solar Flare & CME Timing inside flare Sols (warning speed driven by live DONKI CME velocity)
         let nextFlareStage: 'none' | 'warning' | 'active' = 'none';
-        const warnStart = 4.2;
+        const warnStart = 7.0;
         const activeStart = warnStart + lp.warningDuration;
         if (FLARE_SOLS.has(cur.sol)) {
           if (nextElapsed >= warnStart && nextElapsed < activeStart) {
@@ -2403,7 +2413,7 @@ export default function App() {
                     : `DONKI Alert: ${picked.classType} Solar Flare incoming! Shield UP!`
               );
             }
-          } else if (nextElapsed >= activeStart && nextElapsed < 12.8) {
+          } else if (nextElapsed >= activeStart && nextElapsed < 19.5) {
             nextFlareStage = 'active';
             if (shieldOn && !cur.flareBlockedTicked) {
               cur.flareBlockedTicked = true;
@@ -2481,11 +2491,13 @@ export default function App() {
         }
 
         // 3. Resource Rates driven directly by live NASA DONKI, InSight & Trek telemetry
-        const o2Delta = (greenhouseOn ? lp.o2ChargeRate : lp.o2DrainRate) * dt;
+        // Gentle idle standby pace until the player chooses their first room for this Sol
+        const standbyPace = cur.hasActedThisSol ? 1 : 0.45;
+        const o2Delta = (greenhouseOn ? lp.o2ChargeRate : lp.o2DrainRate * standbyPace) * dt;
         const radRate =
-          shieldOn ? 5.2 : nextFlareStage === 'active' ? lp.unshieldedFlareRadRate : -1.6;
+          shieldOn ? 3.8 : nextFlareStage === 'active' ? lp.unshieldedFlareRadRate : -1.0 * standbyPace;
         const radDelta = radRate * dt;
-        const sciDelta = (scienceOn ? 0.35 : -1.1) * dt + scienceBurst;
+        const sciDelta = (scienceOn ? 0.35 : -0.65 * standbyPace) * dt + scienceBurst;
 
         const nextO2 = Math.max(0, Math.min(100, cur.resources.oxygen + o2Delta));
         const nextRad = Math.max(0, Math.min(100, cur.resources.radiation + radDelta + goalRadBonus));
@@ -2522,9 +2534,16 @@ export default function App() {
           return;
         }
 
-        // 5. Sol Completion Check
+        // 5. Sol Completion Check (requires an active player decision in every Sol)
         if (nextElapsed >= SOL_DURATION_SEC) {
           setSolElapsed(SOL_DURATION_SEC);
+          if (!cur.hasActedThisSol || cur.activeRooms.length === 0) {
+            setEmergencyReason('no_decision');
+            setTelemetry((tm) => ({ ...tm, podSavesUsed: tm.podSavesUsed + 1 }));
+            soundFX.playPodSave();
+            setPhase('EMERGENCY_POD');
+            return;
+          }
           setUnlockedSols((prev) => (prev.includes(cur.sol) ? prev : [...prev, cur.sol]));
           triggerCelebration();
           if (cur.sol >= 10) {
@@ -2943,10 +2962,15 @@ export default function App() {
                 `Safe Rescue for ${commanderName}! Flip the Blue Radiation Shield ON when solar flares arrive.`,
                 `إنقاذ آمن للقائد ${commanderName}! شغّل الدرع الأزرق فور إنذار العاصفة.`
               )
-            : t(
-                `Safe Rescue for ${commanderName}! Keep Science and Comms ON until your radio wave reaches Earth.`,
-                `إنقاذ آمن للقائد ${commanderName}! أبقِ العلوم تعمل حتى تصل الموجة للأرض.`
-              );
+            : emergencyReason === 'no_decision'
+              ? t(
+                  `Time is up for Sol ${sol}, ${commanderName}! Please choose 1 or 2 rooms yourself before the 30-second countdown ends.`,
+                  `انتهى وقت السؤال يا ${commanderName}! يجب أن تختار بنفسك غرفة أو غرفتين قبل انتهاء الـ 30 ثانية.`
+                )
+              : t(
+                  `Safe Rescue for ${commanderName}! Keep Science and Comms ON until your radio wave reaches Earth.`,
+                  `إنقاذ آمن للقائد ${commanderName}! أبقِ العلوم تعمل حتى تصل الموجة للأرض.`
+                );
       speakNow('pod-save', tip);
     }
   }, [
@@ -5020,7 +5044,7 @@ export default function App() {
                 )}
               </span>
 
-              {hasActedThisSol && (
+              {hasActedThisSol && activeRooms.length > 0 ? (
                 <button
                   type="button"
                   onClick={completeSolNow}
@@ -5029,6 +5053,13 @@ export default function App() {
                   <Sparkles className="w-4 h-4" />
                   <span>{t('Next Sol >>', 'اليوم التالي >>')}</span>
                 </button>
+              ) : (
+                <span className="px-3 py-1.5 rounded-lg border border-amber-400/60 bg-amber-500/15 text-amber-200 font-semibold text-xs animate-pulse">
+                  {t(
+                    'Pick 1–2 switches below to lock your choice',
+                    'اختر غرفة أو غرفتين بالأسفل لتحديد قرارك'
+                  )}
+                </span>
               )}
             </div>
           </div>
@@ -5561,10 +5592,15 @@ export default function App() {
                             `Safe Rescue for ${commanderName}! Radiation Safety dropped to 0 percent. Watch NASA DONKI alerts and flip the Blue Radiation Shield ON right away.`,
                             `إنقاذ آمن للقائد ${commanderName}! انخفض أمان الإشعاع إلى صفر بالمئة. شغّل الدرع الأزرق فور سماع الإنذار.`
                           )
-                        : t(
-                            `Safe Rescue for ${commanderName}! Your Science Score reached 0 percent. Flip Science and Comms ON—and on Mars, keep it ON for the full 5 second delay!`,
-                            `إنقاذ آمن للقائد ${commanderName}! احتاجت الأرض لمزيد من التجارب العلمية. شغّل العلوم والاتصالات وأبقها تعمل خمس ثوانٍ كاملة!`
-                          );
+                        : emergencyReason === 'no_decision'
+                          ? t(
+                              `Time is up for Sol ${sol}, ${commanderName}! You need to choose 1 or 2 rooms yourself before the 30-second countdown ends.`,
+                              `انتهت مهلة الـ 30 ثانية في اليوم ${sol} يا ${commanderName}! يجب أن تختار بنفسك غرفة أو غرفتين لإتمام السؤال.`
+                            )
+                          : t(
+                              `Safe Rescue for ${commanderName}! Your Science Score reached 0 percent. Flip Science and Comms ON—and on Mars, keep it ON for the full 5 second delay!`,
+                              `إنقاذ آمن للقائد ${commanderName}! احتاجت الأرض لمزيد من التجارب العلمية. شغّل العلوم والاتصالات وأبقها تعمل خمس ثوانٍ كاملة!`
+                            );
                   toggleSpeak('pod-save', tipText);
                 }}
               />
@@ -5587,6 +5623,14 @@ export default function App() {
                   {t(
                     `Watch out, ${commanderName}—Radiation Safety dropped to 0%! During a solar flare, particles spike fast. Watch NASA DONKI alerts and flip the Blue Radiation Shield ON right away.`,
                     `انتبه يا ${commanderName}—انخفض أمان الإشعاع إلى 0%! خلال العواصف الشمسية يرتفع الخطر بسرعة، فشغّل الدرع الأزرق فور سماع الإنذار.`
+                  )}
+                </p>
+              )}
+              {emergencyReason === 'no_decision' && (
+                <p>
+                  {t(
+                    `Time’s up on Sol ${sol}, ${commanderName}! No rooms are selected automatically—make sure to pick 1 or 2 systems (Shield, Greenhouse, or Science) yourself within 30 seconds.`,
+                    `انتهت مهلة الـ 30 ثانية في اليوم ${sol} يا ${commanderName}! لا يتم اختيار أي قرار تلقائياً—اختر بنفسك غرفة أو غرفتين (الدرع أو البيت المحمي أو العلوم) للإجابة عن السؤال.`
                   )}
                 </p>
               )}
