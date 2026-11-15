@@ -1,0 +1,6 @@
+{
+  "name": "AstroKids: Outpost Command",
+  "description": "Interactive 2D NASA Space Apps Challenge educational game for kids aged 7-12. Command a Lunar Artemis or Martian Jezero Crater outpost using real NASA DONKI, APOD, OSDR, RadLab, and CSA data.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

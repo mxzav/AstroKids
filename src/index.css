@@ -1,0 +1,351 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    background-color: #080e1c;
+    color: #f1f5f9;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Outfit', 'Cairo', system-ui, sans-serif;
+  }
+
+  [dir="rtl"] {
+    font-family: 'Cairo', 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  [dir="rtl"] h1,
+  [dir="rtl"] h2,
+  [dir="rtl"] h3,
+  [dir="rtl"] .font-display {
+    font-family: 'Cairo', 'Outfit', system-ui, sans-serif;
+  }
+
+  .font-mono-tabular {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes bubbleRise {
+  0% {
+    transform: translateY(0px) scale(0.8);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-48px) scale(1.15);
+    opacity: 0;
+  }
+}
+
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes flareStreak {
+  0% {
+    transform: translate(-40px, -40px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(120px, 120px);
+    opacity: 0;
+  }
+}
+
+@keyframes domePulse {
+  0%, 100% {
+    opacity: 0.48;
+  }
+  50% {
+    opacity: 0.78;
+  }
+}
+
+@keyframes waveRipple {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+@keyframes shootingStar {
+  0% {
+    transform: translate(0px, 0px) scale(0.7);
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  18% {
+    transform: translate(220px, 95px) scale(1);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(220px, 95px) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes zeroGHop {
+  0% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translateY(-22px) rotate(-8deg) scale(1.06);
+  }
+  50% {
+    transform: translateY(-28px) rotate(6deg) scale(1.08);
+  }
+  75% {
+    transform: translateY(-12px) rotate(-4deg) scale(1.03);
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes confettiPop {
+  0% {
+    transform: translate(0px, 0px) scale(0.4) rotate(0deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx, 24px), var(--ty, -42px)) scale(1.1) rotate(140deg);
+    opacity: 0;
+  }
+}
+
+@keyframes nextSolGlow {
+  0%, 100% {
+    box-shadow: 0 0 14px rgba(52, 211, 153, 0.35);
+    transform: translateY(0px);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(52, 211, 153, 0.72);
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes rocketFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1.5deg);
+  }
+}
+
+@keyframes launchBounce {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.02);
+  }
+}
+
+@keyframes soundWaveBar {
+  0%, 100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes telemetryMarquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 3.2s ease-in-out infinite;
+}
+
+.animate-bubble-1 {
+  animation: bubbleRise 2.4s ease-out infinite;
+}
+
+.animate-bubble-2 {
+  animation: bubbleRise 2.9s ease-out 0.8s infinite;
+}
+
+.animate-bubble-3 {
+  animation: bubbleRise 2.6s ease-out 1.5s infinite;
+}
+
+.animate-spin-slow {
+  animation: spinSlow 6s linear infinite;
+}
+
+.animate-flare-streak {
+  animation: flareStreak 1.1s linear infinite;
+}
+
+.animate-dome-pulse {
+  animation: domePulse 2.4s ease-in-out infinite;
+}
+
+.animate-wave-ripple {
+  animation: waveRipple 1.6s ease-out infinite;
+}
+
+.animate-twinkle-1 {
+  animation: twinkle 3.1s ease-in-out infinite;
+}
+
+.animate-twinkle-2 {
+  animation: twinkle 4.2s ease-in-out 1.1s infinite;
+}
+
+.animate-twinkle-3 {
+  animation: twinkle 3.6s ease-in-out 2.2s infinite;
+}
+
+.animate-shooting-star-1 {
+  animation: shootingStar 7.5s ease-out 1.5s infinite;
+}
+
+.animate-shooting-star-2 {
+  animation: shootingStar 11s ease-out 5.8s infinite;
+}
+
+.animate-zero-g-hop {
+  animation: zeroGHop 0.85s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.animate-confetti-pop {
+  animation: confettiPop 1.05s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-next-sol-glow {
+  animation: nextSolGlow 1.9s ease-in-out infinite;
+}
+
+.animate-rocket-float {
+  animation: rocketFloat 3.4s ease-in-out infinite;
+}
+
+.animate-launch-bounce {
+  animation: launchBounce 2.2s ease-in-out infinite;
+}
+
+.animate-sound-bar-1 {
+  animation: soundWaveBar 0.6s ease-in-out infinite;
+}
+
+.animate-sound-bar-2 {
+  animation: soundWaveBar 0.6s ease-in-out 0.18s infinite;
+}
+
+.animate-sound-bar-3 {
+  animation: soundWaveBar 0.6s ease-in-out 0.34s infinite;
+}
+
+.animate-telemetry-marquee {
+  display: flex;
+  width: max-content;
+  animation: telemetryMarquee 44s linear infinite;
+  will-change: transform;
+}
+
+.animate-telemetry-marquee:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-slow,
+  .animate-bubble-1,
+  .animate-bubble-2,
+  .animate-bubble-3,
+  .animate-spin-slow,
+  .animate-flare-streak,
+  .animate-dome-pulse,
+  .animate-wave-ripple,
+  .animate-twinkle-1,
+  .animate-twinkle-2,
+  .animate-twinkle-3,
+  .animate-shooting-star-1,
+  .animate-shooting-star-2,
+  .animate-zero-g-hop,
+  .animate-confetti-pop,
+  .animate-next-sol-glow,
+  .animate-rocket-float,
+  .animate-launch-bounce,
+  .animate-sound-bar-1,
+  .animate-sound-bar-2,
+  .animate-sound-bar-3,
+  .animate-telemetry-marquee {
+    animation: none !important;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-certificate {
+    position: static !important;
+    box-shadow: none !important;
+    border-color: #b45309 !important;
+    background: #fffdf7 !important;
+    color: #0f172a !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+}
