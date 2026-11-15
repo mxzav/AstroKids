@@ -1220,6 +1220,22 @@ export default function App() {
     podSavesUsed: 0,
     switchToggles: 0,
   });
+  const solStartSnapshotRef = useRef<{
+    sol: number;
+    resources: Resources;
+    telemetry: PlayerTelemetry;
+  }>({
+    sol: 1,
+    resources: { oxygen: 82, radiation: 86, science: 58 },
+    telemetry: {
+      flaresBlocked: 0,
+      flaresTotal: 0,
+      signalsSent: 0,
+      signalsCancelled: 0,
+      podSavesUsed: 0,
+      switchToggles: 0,
+    },
+  });
   const [harvestUsedThisSol, setHarvestUsedThisSol] = useState<boolean>(false);
   const [dustCleanedThisSol, setDustCleanedThisSol] = useState<boolean>(false);
   const [missionLog, setMissionLog] = useState<MissionLogMap>(() => readMissionLog());
@@ -2060,7 +2076,21 @@ export default function App() {
             ? 'لم يتم تشغيل أي غرفة تلقائياً! اقرأ السؤال ثم اختر بنفسك غرفة أو غرفتين بالأسفل لتحديد قرارك.'
             : 'No rooms are pre-selected! Read the mission question and choose 1 or 2 power switches below yourself.',
       });
-      setResources({ oxygen: 82, radiation: 86, science: 58 });
+      const startResources: Resources = { oxygen: 82, radiation: 86, science: 58 };
+      const startTelemetry: PlayerTelemetry = {
+        flaresBlocked: 0,
+        flaresTotal: 0,
+        signalsSent: 0,
+        signalsCancelled: 0,
+        podSavesUsed: 0,
+        switchToggles: 0,
+      };
+      solStartSnapshotRef.current = {
+        sol: 1,
+        resources: { ...startResources },
+        telemetry: { ...startTelemetry },
+      };
+      setResources(startResources);
       setSignalInFlight(false);
       setSignalProgress(0);
       setSignalFeedback(null);
@@ -2079,14 +2109,7 @@ export default function App() {
             : `Welcome to Artemis Base, ${commanderName}! Power up 2 rooms at a time!`
       );
       setUnlockedSols([]);
-      setTelemetry({
-        flaresBlocked: 0,
-        flaresTotal: 0,
-        signalsSent: 0,
-        signalsCancelled: 0,
-        podSavesUsed: 0,
-        switchToggles: 0,
-      });
+      setTelemetry(startTelemetry);
       setPhase('PLAYING');
     },
     [commanderName, lang]
@@ -2095,11 +2118,18 @@ export default function App() {
   const retrySolFromPodSave = useCallback(() => {
     soundFX.unlock();
     soundFX.playSwitch(true);
-    setResources((prev) => ({
-      oxygen: Math.max(prev.oxygen, 65),
-      radiation: Math.max(prev.radiation, 65),
-      science: Math.max(prev.science, 60),
-    }));
+    const curRes = stateRef.current.resources;
+    const rescuedResources: Resources = {
+      oxygen: Math.max(curRes.oxygen, 65),
+      radiation: Math.max(curRes.radiation, 65),
+      science: Math.max(curRes.science, 60),
+    };
+    solStartSnapshotRef.current = {
+      sol: stateRef.current.sol,
+      resources: { ...rescuedResources },
+      telemetry: { ...telemetry },
+    };
+    setResources(rescuedResources);
     setSolElapsed(0);
     setHasActedThisSol(false);
     setSolGoalCompleted(false);
@@ -2125,7 +2155,7 @@ export default function App() {
         : `Emergency Pod Save complete, ${commanderName}! Let’s try a new power combo.`
     );
     setPhase('PLAYING');
-  }, [commanderName, lang]);
+  }, [telemetry, commanderName, lang]);
 
   const completeSolNow = useCallback(() => {
     const cur = stateRef.current;
@@ -2217,11 +2247,18 @@ export default function App() {
     setSignalProgress(0);
     stateRef.current.hasTriggeredFlareThisSol = false;
     stateRef.current.flareBlockedTicked = false;
-    setResources((prev) => ({
-      oxygen: Math.min(100, Math.max(35, prev.oxygen + 5)),
-      radiation: Math.min(100, Math.max(35, prev.radiation + 5)),
-      science: Math.min(100, Math.max(35, prev.science + 5)),
-    }));
+    const curRes = stateRef.current.resources;
+    const nextStartResources: Resources = {
+      oxygen: Math.min(100, Math.max(35, curRes.oxygen + 5)),
+      radiation: Math.min(100, Math.max(35, curRes.radiation + 5)),
+      science: Math.min(100, Math.max(35, curRes.science + 5)),
+    };
+    solStartSnapshotRef.current = {
+      sol: nextSol,
+      resources: { ...nextStartResources },
+      telemetry: { ...telemetry },
+    };
+    setResources(nextStartResources);
     setMascotRoom('greenhouse');
     setMascotNote(
       lang === 'ar'
@@ -2233,7 +2270,55 @@ export default function App() {
           : `Sol ${nextSol} starting, ${commanderName}! Choose your switches for this question.`
     );
     setPhase('PLAYING');
-  }, [sol, commanderName, lang]);
+  }, [sol, telemetry, commanderName, lang]);
+
+  const resetCurrentSol = useCallback(() => {
+    const cur = stateRef.current;
+    if (cur.phase !== 'PLAYING') return;
+    soundFX.unlock();
+    soundFX.playSwitch(false);
+    const snap = solStartSnapshotRef.current;
+    const restoredResources =
+      snap.sol === cur.sol ? { ...snap.resources } : { ...cur.resources };
+    const restoredTelemetry =
+      snap.sol === cur.sol
+        ? {
+            ...snap.telemetry,
+            podSavesUsed: Math.max(snap.telemetry.podSavesUsed, telemetry.podSavesUsed),
+          }
+        : telemetry;
+
+    setResources(restoredResources);
+    setTelemetry(restoredTelemetry);
+    setSolElapsed(0);
+    setIsPaused(false);
+    setHasActedThisSol(false);
+    setSolGoalCompleted(false);
+    setActiveRooms([]);
+    setHarvestUsedThisSol(false);
+    setDustCleanedThisSol(false);
+    setCelebrating(false);
+    setFlareStage('none');
+    setSignalInFlight(false);
+    setSignalProgress(0);
+    setSignalFeedback(null);
+    setCycledNotice(null);
+    stateRef.current.hasTriggeredFlareThisSol = false;
+    stateRef.current.flareBlockedTicked = false;
+    setMascotRoom('greenhouse');
+    setCauseEffectNote({
+      tone: 'sky',
+      sentence:
+        lang === 'ar'
+          ? `تمت إعادة اليوم ${cur.sol} من البداية! جرّب خطة طاقة جديدة وشاهد تأثيرها المباشر على الموارد.`
+          : `Sol ${cur.sol} reset to its exact starting state! Try a brand-new switch strategy and watch the live impact.`,
+    });
+    setMascotNote(
+      lang === 'ar'
+        ? `تمت إعادة اليوم ${cur.sol} بنجاح يا ${commanderName} — اختر خطتك الجديدة!`
+        : `Sol ${cur.sol} reset cleanly, ${commanderName}—pick your new power combo!`
+    );
+  }, [telemetry, commanderName, lang]);
 
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
@@ -2570,6 +2655,24 @@ export default function App() {
   const shieldOn = isRoomOn('shield');
   const greenhouseOn = isRoomOn('greenhouse');
   const scienceOn = isRoomOn('science');
+
+  // Live Power & Resource Engineering Preview (real-time +/- impact of current switch combo)
+  const resourcePreview = useMemo(() => {
+    const standbyPace = hasActedThisSol ? 1 : 0.45;
+    const o2 = greenhouseOn
+      ? Math.round(livePhysics.o2ChargeRate * 4)
+      : Math.round(livePhysics.o2DrainRate * 6 * standbyPace);
+    const flareRiskActive = flareStage === 'active' || (FLARE_SOLS.has(sol) && flareStage === 'warning');
+    const radiation = shieldOn
+      ? Math.round(3.8 * 4)
+      : flareRiskActive
+        ? Math.round(livePhysics.unshieldedFlareRadRate * 2)
+        : Math.round(-1.0 * 8 * standbyPace);
+    const science = scienceOn
+      ? Math.round((planet === 'mars' ? 18 : 14) + 0.35 * 4)
+      : Math.round(-0.65 * 8 * standbyPace);
+    return { oxygen: o2, radiation, science };
+  }, [hasActedThisSol, greenhouseOn, shieldOn, scienceOn, livePhysics, flareStage, sol, planet]);
 
   const astronautMood = useMemo(() => {
     if (resources.oxygen < 36) return 'sweating';
@@ -4140,6 +4243,18 @@ export default function App() {
                   style={{ width: `${resources.oxygen}%` }}
                 />
               </div>
+              <div className="mt-1.5 flex items-center justify-between gap-1 text-[10px] font-mono-tabular">
+                <span className="text-slate-400 truncate">{t('Impact:', 'التأثير:')}</span>
+                <span
+                  className={`px-1.5 py-0.5 rounded font-bold border ${
+                    resourcePreview.oxygen >= 0
+                      ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
+                      : 'bg-rose-500/20 border-rose-400/40 text-rose-300'
+                  }`}
+                >
+                  {resourcePreview.oxygen >= 0 ? `+${resourcePreview.oxygen}%` : `${resourcePreview.oxygen}%`} O2
+                </span>
+              </div>
             </div>
 
             {/* Radiation Safety */}
@@ -4161,6 +4276,18 @@ export default function App() {
                   style={{ width: `${resources.radiation}%` }}
                 />
               </div>
+              <div className="mt-1.5 flex items-center justify-between gap-1 text-[10px] font-mono-tabular">
+                <span className="text-slate-400 truncate">{t('Impact:', 'التأثير:')}</span>
+                <span
+                  className={`px-1.5 py-0.5 rounded font-bold border ${
+                    resourcePreview.radiation >= 0
+                      ? 'bg-sky-500/20 border-sky-400/40 text-sky-300'
+                      : 'bg-rose-500/20 border-rose-400/40 text-rose-300'
+                  }`}
+                >
+                  {resourcePreview.radiation >= 0 ? `+${resourcePreview.radiation}%` : `${resourcePreview.radiation}%`} {t('Shield', 'درع')}
+                </span>
+              </div>
             </div>
 
             {/* Science Score */}
@@ -4181,6 +4308,18 @@ export default function App() {
                   }`}
                   style={{ width: `${resources.science}%` }}
                 />
+              </div>
+              <div className="mt-1.5 flex items-center justify-between gap-1 text-[10px] font-mono-tabular">
+                <span className="text-slate-400 truncate">{t('Impact:', 'التأثير:')}</span>
+                <span
+                  className={`px-1.5 py-0.5 rounded font-bold border ${
+                    resourcePreview.science >= 0
+                      ? 'bg-amber-500/20 border-amber-400/40 text-amber-200'
+                      : 'bg-rose-500/20 border-rose-400/40 text-rose-300'
+                  }`}
+                >
+                  {resourcePreview.science >= 0 ? `+${resourcePreview.science}%` : `${resourcePreview.science}%`} {t('Sci', 'علوم')}
+                </span>
               </div>
             </div>
           </div>
@@ -5043,6 +5182,19 @@ export default function App() {
                   'تشغيل غرفة ثالثة يطفئ أقدم غرفة تلقائياً'
                 )}
               </span>
+
+              <button
+                type="button"
+                onClick={resetCurrentSol}
+                title={t(
+                  'Restore Oxygen, Shield, Science & switches to the start of this Sol',
+                  'استعادة الأكسجين والدرع والعلوم والمفاتيح إلى بداية هذا اليوم'
+                )}
+                className="min-h-[40px] px-3.5 py-1.5 rounded-xl border border-slate-600/80 bg-slate-900 hover:bg-slate-800 hover:border-sky-400/70 text-slate-200 font-display font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all whitespace-nowrap"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-sky-300" />
+                <span>{t('Reset Sol', 'إعادة هذا اليوم')}</span>
+              </button>
 
               {hasActedThisSol && activeRooms.length > 0 ? (
                 <button
